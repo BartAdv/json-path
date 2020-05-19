@@ -1,6 +1,8 @@
 (ns json-path.walker
   [:require [json-path.match :as m]])
 
+(def ^:dynamic *keywords?* true)
+
 (declare walk eval-expr)
 
 (defn eval-eq-expr [op-form context operands]
@@ -31,8 +33,11 @@
   (if (= (first operands) "*")
     (select-all current-context)
     (let [obj (:value current-context)
-          key (keyword (first operands))]
-      (m/with-context key (key obj) current-context))))
+          key (if *keywords?*
+                (keyword (first operands))
+                (first operands))
+          val (get obj key)]
+      (m/with-context key val current-context))))
 
 (defn- obj-vals [current-context]
   (let [obj (:value current-context)]
